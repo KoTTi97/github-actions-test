@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Print test environment variable
-        run: echo ${{ env.TEST_ENVIRONMENT_VARIABLE }}
+        run: echo "$TEST_ENVIRONMENT_VARIABLE"
       - name: Install Vercel CLI
         working-directory: ./app
         run: npm install --global vercel@latest
