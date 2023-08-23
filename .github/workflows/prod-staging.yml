@@ -10,8 +10,6 @@ jobs:
 
   lint:
     name: Run Linting
-    environment:
-      name: ${{ steps.set_environment.outputs.DEPLOY_ENV }}
     #runs-on: ubuntu-latest
     runs-on: self-hosted
     steps:
@@ -36,10 +34,10 @@ jobs:
         run: pnpm eslint
 
   deploy-staging:
+    name: Deploy Staging to Vercel
     if: github.ref == 'refs/heads/staging'
     runs-on: self-hosted
-    environment:
-      name: staging
+    environment: staging
     steps:
       - name: Print Test
         id: print_test
@@ -47,10 +45,10 @@ jobs:
           echo "This is the staging environment."
 
   deploy-production:
+    name: Deploy Production to Vercel
     if: github.ref == 'refs/heads/production'
     runs-on: self-hosted
-    environment:
-      name: production
+    environment: production
     steps:
       - name: Print Test
         id: print_test
