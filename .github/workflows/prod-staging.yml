@@ -41,16 +41,14 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v2
-      - name: Print Environment Variables
-        id: print_env
-        run: |
-          echo "VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}"
-          echo "VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}"
       - name: Install Vercel CLI
+        working-directory: ./app
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
+        working-directory: ./app
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Build Project Artifacts
+        working-directory: ./app
         run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Deploy to Vercel
         working-directory: ./app
@@ -64,16 +62,14 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v2
-      - name: Print Environment Variables
-        id: print_env
-        run: |
-          echo "VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}"
-          echo "VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}"
       - name: Install Vercel CLI
+        working-directory: ./app
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
+        working-directory: ./app
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Build Project Artifacts
+        working-directory: ./app
         run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Deploy to Vercel
         working-directory: ./app
