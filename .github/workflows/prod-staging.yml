@@ -1,10 +1,5 @@
 name: Lint and Deploy to Vercel for Production and Staging
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
-
 on:
   push:
     branches:
@@ -13,24 +8,11 @@ on:
 
 jobs:
 
-  determine-deployment-environment:
-    name: Determine Deployment Environment
-    runs-on: self-hosted
-    steps:
-      - name: Determine Deployment Environment
-        id: set_environment
-        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
-
   lint:
     name: Run Linting
     #runs-on: ubuntu-latest
-    needs:
-      - determine-deployment-environment
     runs-on: self-hosted
     steps:
-      - name: Print DEPLOY_ENV
-        run: echo "Deployment environment is '$DEPLOY_ENV'"
-
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -53,12 +35,16 @@ jobs:
 
   deploy:
     name: Deploy to Vercel
-    environment: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
+    environment:
+      name: ${{ if(eq(github.ref, 'refs/heads/staging'), 'staging', 'production') }}
     runs-on: self-hosted
     needs: lint
     if: ${{ needs.lint.result == 'success' }}
     steps:
       - uses: actions/checkout@v2
+      - name: Determine Deployment Environment
+        id: set_environment
+        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
       - name: Print Environment Variables
         id: print_env
         run: |
