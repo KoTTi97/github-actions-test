@@ -1,5 +1,10 @@
 name: Lint and Deploy to Vercel for Production and Staging
 
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+
 on:
   push:
     branches:
@@ -7,6 +12,7 @@ on:
       - production
 
 jobs:
+
   lint:
     name: Run Linting
     #runs-on: ubuntu-latest
@@ -36,27 +42,39 @@ jobs:
     name: Deploy to Vercel
     runs-on: self-hosted
     needs: lint
-    if: ${{ needs.lint.result == 'success' }}  # Only run if the 'lint' job is successful
+    if: ${{ needs.lint.result == 'success' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-
+      - uses: actions/checkout@v2
+      - name: Print Environment Variables
+        id: print_env
+        run: |
+          echo "VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}"
+          echo "VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}"
+          echo "VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}"
       - name: Determine Deployment Environment
         id: set_environment
         run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
-
-      - name: Deploy
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        run: |
+          if [[ $DEPLOY_ENV == 'preview' ]]; then
+            vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          elif [[ $DEPLOY_ENV == 'production' ]]; then
+            vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          else
+            echo "Unknown deployment environment."
+            exit 1
+          fi
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Deploy to Vercel
         working-directory: ./app
         run: |
           if [[ $DEPLOY_ENV == 'preview' ]]; then
-            pnpm deploy:preview
+            vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
           elif [[ $DEPLOY_ENV == 'production' ]]; then
-            pnpm deploy:production
+            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
           else
             echo "Unknown deployment environment."
             exit 1
