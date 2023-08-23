@@ -13,11 +13,22 @@ on:
 
 jobs:
 
+  determine-deployment-environment:
+    name: Determine Deployment Environment
+    runs-on: self-hosted
+    steps:
+      - name: Determine Deployment Environment
+        id: set_environment
+        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
+
   lint:
     name: Run Linting
     #runs-on: ubuntu-latest
     runs-on: self-hosted
     steps:
+      - name: Print DEPLOY_ENV
+        run: echo "Deployment environment is '$DEPLOY_ENV'"
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -40,6 +51,7 @@ jobs:
 
   deploy:
     name: Deploy to Vercel
+    environment: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
     runs-on: self-hosted
     needs: lint
     if: ${{ needs.lint.result == 'success' }}
@@ -50,11 +62,6 @@ jobs:
         run: |
           echo "VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}"
           echo "VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}"
-      - name: Determine Deployment Environment
-        id: set_environment
-        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
-      - name: Print DEPLOY_ENV
-        run: echo "Deployment environment is $DEPLOY_ENV"
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
