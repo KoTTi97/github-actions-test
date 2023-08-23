@@ -16,7 +16,7 @@
     "start": "next start",
     "start:prod": "pnpm build && pnpm start",
     "separatoDeploy": "---------------------- DEPLOY ----------------------",
-    "vercel:link-project": "VERCEL_PROJECT_ID=prj_OPv3FlK3PfhRLLf1U6Mw0QI77heh VERCEL_ORG_ID=qoskyGLRMimmASRmEg9i5oEa",
+    "vercel:link-project": "VERCEL_PROJECT_ID=prj_Vn1n0PEbRGnkVRZPszHGRqPNY2Sy VERCEL_ORG_ID=qoskyGLRMimmASRmEg9i5oEa",
     "deploy:preview": "pnpm vercel:link-project vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes",
     "deploy:production": "pnpm vercel:link-project vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes --prod"
   },
