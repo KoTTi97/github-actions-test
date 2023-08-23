@@ -1,0 +1,63 @@
+name: Lint and Deploy to Vercel for Production and Staging
+
+on:
+  push:
+    branches:
+      - staging
+      - production
+
+jobs:
+  lint:
+    name: Run Linting
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        working-directory: ./app
+        run: pnpm install
+
+      - name: Run type checking
+        working-directory: ./app
+        run: pnpm check-types
+
+      - name: Run ESLint
+        working-directory: ./app
+        run: pnpm eslint
+
+  deploy:
+    name: Deploy to Vercel
+    runs-on: self-hosted
+    needs: lint
+    if: ${{ needs.lint.result == 'success' }}  # Only run if the 'lint' job is successful
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Determine Deployment Environment
+        id: set_environment
+        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
+
+      - name: Deploy
+        working-directory: ./app
+        run: |
+          if [[ $DEPLOY_ENV == 'preview' ]]; then
+            pnpm deploy:preview
+          elif [[ $DEPLOY_ENV == 'production' ]]; then
+            pnpm deploy:production
+          else
+            echo "Unknown deployment environment."
+            exit 1
+          fi

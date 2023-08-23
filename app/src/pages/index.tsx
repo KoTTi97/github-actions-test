@@ -1,7 +1,5 @@
 import { type FunctionComponent } from "react";
 
-const test: number = "test";
-
 const Home: FunctionComponent = () => (
   <div
     style={{
