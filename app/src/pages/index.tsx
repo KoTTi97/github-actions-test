@@ -1,4 +1,6 @@
-const Home = () => (
+import { type FunctionComponent } from "react";
+
+const Home: FunctionComponent = () => (
   <div
     style={{
       alignItems: "center",
