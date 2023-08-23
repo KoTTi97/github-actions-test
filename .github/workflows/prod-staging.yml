@@ -8,13 +8,6 @@ on:
 
 jobs:
 
-  set-environment:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Determine Deployment Environment
-        id: set_environment
-        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'staging'; else echo 'production'; fi)" >> $GITHUB_ENV
-
   lint:
     name: Run Linting
     environment:
@@ -42,45 +35,67 @@ jobs:
         working-directory: ./app
         run: pnpm eslint
 
-  deploy:
-    name: Deploy to Vercel
-    environment:
-      name: ${{ steps.set_environment.outputs.DEPLOY_ENV }}
+  deploy-staging:
+    if: github.ref == 'refs/heads/staging'
     runs-on: self-hosted
-    needs: lint
-    if: ${{ needs.lint.result == 'success' }}
+    environment:
+      name: staging
     steps:
-      - uses: actions/checkout@v2
-      - name: Determine Deployment Environment
-        id: set_environment
-        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
-      - name: Print Environment Variables
-        id: print_env
+      - name: Print Test
+        id: print_test
         run: |
-          echo "VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}"
-          echo "VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}"
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-      - name: Pull Vercel Environment Information
+          echo "This is the staging environment."
+
+  deploy-production:
+    if: github.ref == 'refs/heads/production'
+    runs-on: self-hosted
+    environment:
+      name: production
+    steps:
+      - name: Print Test
+        id: print_test
         run: |
-          if [[ $DEPLOY_ENV == 'preview' ]]; then
-            vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-          elif [[ $DEPLOY_ENV == 'production' ]]; then
-            vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-          else
-            echo "Unknown deployment environment."
-            exit 1
-          fi
-      - name: Build Project Artifacts
-        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Deploy to Vercel
-        working-directory: ./app
-        run: |
-          if [[ $DEPLOY_ENV == 'preview' ]]; then
-            vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-          elif [[ $DEPLOY_ENV == 'production' ]]; then
-            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-          else
-            echo "Unknown deployment environment."
-            exit 1
-          fi
+          echo "This is the production environment."
+
+#  deploy:
+#    name: Deploy to Vercel
+#    environment:
+#      name: ${{ steps.set_environment.outputs.DEPLOY_ENV }}
+#    runs-on: self-hosted
+#    needs: lint
+#    if: ${{ needs.lint.result == 'success' }}
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Determine Deployment Environment
+#        id: set_environment
+#        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'preview'; else echo 'production'; fi)" >> $GITHUB_ENV
+#      - name: Print Environment Variables
+#        id: print_env
+#        run: |
+#          echo "VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}"
+#          echo "VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}"
+#      - name: Install Vercel CLI
+#        run: npm install --global vercel@latest
+#      - name: Pull Vercel Environment Information
+#        run: |
+#          if [[ $DEPLOY_ENV == 'preview' ]]; then
+#            vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#          elif [[ $DEPLOY_ENV == 'production' ]]; then
+#            vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#          else
+#            echo "Unknown deployment environment."
+#            exit 1
+#          fi
+#      - name: Build Project Artifacts
+#        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Deploy to Vercel
+#        working-directory: ./app
+#        run: |
+#          if [[ $DEPLOY_ENV == 'preview' ]]; then
+#            vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#          elif [[ $DEPLOY_ENV == 'production' ]]; then
+#            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#          else
+#            echo "Unknown deployment environment."
+#            exit 1
+#          fi
