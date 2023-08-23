@@ -8,8 +8,17 @@ on:
 
 jobs:
 
+  set-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine Deployment Environment
+        id: set_environment
+        run: echo "DEPLOY_ENV=$(if [[ $GITHUB_REF == 'refs/heads/staging' ]]; then echo 'staging'; else echo 'production'; fi)" >> $GITHUB_ENV
+
   lint:
     name: Run Linting
+    environment:
+      name: ${{ steps.set_environment.outputs.DEPLOY_ENV }}
     #runs-on: ubuntu-latest
     runs-on: self-hosted
     steps:
@@ -36,7 +45,7 @@ jobs:
   deploy:
     name: Deploy to Vercel
     environment:
-      name: ${{ if(eq(github.ref, 'refs/heads/staging'), 'staging', 'production') }}
+      name: ${{ steps.set_environment.outputs.DEPLOY_ENV }}
     runs-on: self-hosted
     needs: lint
     if: ${{ needs.lint.result == 'success' }}
