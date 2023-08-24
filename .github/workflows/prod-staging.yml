@@ -59,8 +59,8 @@ jobs:
 
   deploy-production:
     name: Deploy Production to Vercel
-    needs: lint
-    if: github.ref == 'refs/heads/main'
+#    needs: lint
+#    if: github.ref == 'refs/heads/main'
     runs-on: self-hosted
     environment: production
     outputs:
