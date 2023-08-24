@@ -117,7 +117,6 @@ jobs:
         id: apply-db-migrations
         working-directory: ./app
         run: node ci/apply-db-migrations.mjs
-        continue-on-error: true
       - name: Rollback Vercel Deployment after failed database migrations
         if: steps.apply-db-migrations.conclusion == 'failure'
         run: |
