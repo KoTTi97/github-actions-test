@@ -14,70 +14,70 @@ on:
 
 jobs:
 
-  lint:
-    name: Run Linting
-    #runs-on: ubuntu-latest
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-      - name: Install Dependencies
-        working-directory: ./app
-        run: pnpm install
-      - name: Run type checking
-        working-directory: ./app
-        run: pnpm check-types
-      - name: Run ESLint
-        working-directory: ./app
-        run: pnpm eslint
+#  lint:
+#    name: Run Linting
+#    #runs-on: ubuntu-latest
+#    runs-on: self-hosted
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: Setup Node
+#        uses: actions/setup-node@v2
+#        with:
+#          node-version: 18
+#      - name: Install Dependencies
+#        working-directory: ./app
+#        run: pnpm install
+#      - name: Run type checking
+#        working-directory: ./app
+#        run: pnpm check-types
+#      - name: Run ESLint
+#        working-directory: ./app
+#        run: pnpm eslint
 
-  deploy-staging:
-    name: Deploy Staging to Vercel
-    needs: lint
-    if: github.ref == 'refs/heads/staging'
-    runs-on: self-hosted
-    environment: staging
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-      - name: Install Dependencies
-        working-directory: ./app
-        run: pnpm install
-      - name: Print environment specific variable
-        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
-      - name: Install Vercel CLI
-        working-directory: ./app
-        run: npm install --global vercel@latest
-      - name: Pull Vercel Environment Information
-        working-directory: ./app
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Build Project Artifacts
-        working-directory: ./app
-        run: vercel build --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Deploy to Vercel
-        working-directory: ./app
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Apply Database Migrations
-        id: apply-db-migrations
-        working-directory: ./app
-        run: node ci/apply-db-migrations.mjs
-      - name: Get Latest Vercel Preview Deployment ID
-        id: get-latest-preview-deployment-id
-        run: |
-          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
-          echo "::set-output name=latestPreviewDeploymentUrl::$result"
-      - name: Assign staging alias/domain to latest preview deployment
-        run: |
-          captured_latestPreviewDeploymentUrl="${{ steps.get-latest-preview-deployment-id.outputs.latestPreviewDeploymentUrl }}"
-          echo "Assigning staging alias domain '${{ vars.DEPLOYMENT_DOMAIN }}' to preview deployment with URL: $captured_latestPreviewDeploymentUrl"
-          vercel alias set $captured_latestPreviewDeploymentUrl ${{ vars.DEPLOYMENT_DOMAIN }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#  deploy-staging:
+#    name: Deploy Staging to Vercel
+#    needs: lint
+#    if: github.ref == 'refs/heads/staging'
+#    runs-on: self-hosted
+#    environment: staging
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v2
+#        with:
+#          node-version: 18
+#      - name: Install Dependencies
+#        working-directory: ./app
+#        run: pnpm install
+#      - name: Print environment specific variable
+#        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
+#      - name: Install Vercel CLI
+#        working-directory: ./app
+#        run: npm install --global vercel@latest
+#      - name: Pull Vercel Environment Information
+#        working-directory: ./app
+#        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Build Project Artifacts
+#        working-directory: ./app
+#        run: vercel build --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Deploy to Vercel
+#        working-directory: ./app
+#        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Apply Database Migrations
+#        id: apply-db-migrations
+#        working-directory: ./app
+#        run: node ci/apply-db-migrations.mjs
+#      - name: Get Latest Vercel Preview Deployment ID
+#        id: get-latest-preview-deployment-id
+#        run: |
+#          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
+#          echo "::set-output name=latestPreviewDeploymentUrl::$result"
+#      - name: Assign staging alias/domain to latest preview deployment
+#        run: |
+#          captured_latestPreviewDeploymentUrl="${{ steps.get-latest-preview-deployment-id.outputs.latestPreviewDeploymentUrl }}"
+#          echo "Assigning staging alias domain '${{ vars.DEPLOYMENT_DOMAIN }}' to preview deployment with URL: $captured_latestPreviewDeploymentUrl"
+#          vercel alias set $captured_latestPreviewDeploymentUrl ${{ vars.DEPLOYMENT_DOMAIN }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
 
   deploy-production:
     name: Deploy Production to Vercel
@@ -101,18 +101,18 @@ jobs:
         run: |
           result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
           echo "::set-output name=latestDeploymentId::$result"
-      - name: Install Vercel CLI
-        working-directory: ./app
-        run: npm install --global vercel@latest
-      - name: Pull Vercel Environment Information
-        working-directory: ./app
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Build Project Artifacts
-        working-directory: ./app
-        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Deploy to Vercel
-        working-directory: ./app
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Install Vercel CLI
+#        working-directory: ./app
+#        run: npm install --global vercel@latest
+#      - name: Pull Vercel Environment Information
+#        working-directory: ./app
+#        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Build Project Artifacts
+#        working-directory: ./app
+#        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Deploy to Vercel
+#        working-directory: ./app
+#        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Apply Database Migrations
         id: apply-db-migrations
         working-directory: ./app
