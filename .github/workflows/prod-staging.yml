@@ -13,27 +13,6 @@ on:
 
 jobs:
 
-  run-script:
-    runs-on: self-hosted
-    outputs:
-      captured-output: ${{ steps.execute-script.outputs.latestDeploymentId }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-      - name: Get Latest Vercel Production Deployment ID
-        id: execute-script
-        run: |
-          result=$(node ./ci/get-latest-vercel-production-deployment-id.js)
-          echo "::set-output name=latestDeploymentId::$result"
-      - name: Get the Captured Output
-        run: |
-          captured_latestDeploymentId="${{ steps.execute-script.outputs.latestDeploymentId }}"
-          echo "The captured output is: $captured_latestDeploymentId"
-
   lint:
     name: Run Linting
     #runs-on: ubuntu-latest
