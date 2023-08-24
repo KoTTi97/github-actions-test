@@ -15,19 +15,24 @@ jobs:
 
   run-script:
     runs-on: self-hosted
+    outputs:
+      captured-output: ${{ steps.execute-script.outputs.latestDeploymentId }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Run Shell Script
-      id: run-script
-      run: |
-        chmod +x ./dummy-script.sh
-        output=$(./dummy-script.sh)
-        echo "$output"
-    - name: Get the Captured Output
-      run: |
-        captured_output="${{ steps.run-script.outputs.my_output }}"
-        echo "The captured output is: $captured_output"
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18  # Use the desired Node.js version
+      - name: Execute Node.js Script and Capture Output
+        id: execute-script
+        run: |
+          result=$(node ./ci/get-latest-vercel-production-deployment-id.js)
+          echo "::set-output name=latestDeploymentId::$result"
+      - name: Get the Captured Output
+        run: |
+          captured_latestDeploymentId="${{ steps.execute-script.outputs.latestDeploymentId }}"
+          echo "The captured output is: $captured_latestDeploymentId"
 
 #  lint:
 #    name: Run Linting
