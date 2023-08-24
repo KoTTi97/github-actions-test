@@ -74,7 +74,7 @@ jobs:
       - name: Get Latest Vercel Production Deployment ID
         id: get-latest-deployment-id
         run: |
-          result=$(node ./ci/get-latest-vercel-production-deployment-id.js)
+          result=$(node ./ci/get-latest-vercel-production-deployment-id.js "prefers-deployment-id")
           echo "::set-output name=latestDeploymentId::$result"
       - name: Install Vercel CLI
         working-directory: ./app
@@ -93,13 +93,13 @@ jobs:
           captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}"
           echo "Rolling back deployment with ID: $captured_latestDeploymentId"
           vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Get Vercel Deployment ID of rolled back deployment
-        id: get-rolled-back-deployment-id
+      - name: Get Vercel Deployment URL of rolled back deployment
+        id: get-rolled-back-deployment-url
         run: |
-          result=$(node ./ci/get-latest-vercel-production-deployment-id.js)
-          echo "::set-output name=rolledBackDeploymentId::$result"
+          result=$(node ./ci/get-latest-vercel-production-deployment-id.js "prefers-deployment-url")
+          echo "::set-output name=rolledBackDeploymentUrl::$result"
       - name: Delete rolled back deployment from Vercel
         run: |
-          captured_rolledBackDeploymentId="${{ steps.get-rolled-back-deployment-id.outputs.rolledBackDeploymentId }}"
-          echo "Deleting rolled back deployment with ID: $captured_rolledBackDeploymentId"
-          vercel remove $captured_rolledBackDeploymentId --safe --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          captured_rolledBackDeploymentUrl="${{ steps.get-rolled-back-deployment-url.outputs.rolledBackDeploymentUrl }}"
+          echo "Deleting rolled back deployment with URL: $captured_rolledBackDeploymentUrl"
+          vercel remove $captured_rolledBackDeploymentUrl --safe --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}

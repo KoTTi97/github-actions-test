@@ -1,5 +1,19 @@
 const getLatestVercelProductionDeploymentId = async () =>
 {
+  let preferredKey;
+
+  switch(process.argv[2])
+  {
+    case "prefers-deployment-id":
+      preferredKey = "id";
+      break;
+    case "prefers-deployment-url":
+      preferredKey = "url";
+      break;
+    default:
+      throw new Error("preferredKey must be either 'prefers-deployment-id' or 'prefers-deployment-url'");
+  }
+
   const response = await fetch("https://api.vercel.com/v6/deployments?limit=2&target=production", {
     method: "GET",
     headers: {
@@ -14,15 +28,25 @@ const getLatestVercelProductionDeploymentId = async () =>
 
   const data = await response.json()
 
+  console.log(JSON.stringify(data, null, 2));
+
   const latestDeploymentId = data.deployments[0].uid;
+  const latestDeploymentUrl = data.deployments[0].url;
 
   if(!latestDeploymentId)
   {
     throw new Error("No deployment ID found");
   }
 
-  // this is captured by the CI and used in the next step
-  console.log(latestDeploymentId);
+  // output the preferred key so the CI can use it
+  if(preferredKey === "id")
+  {
+    console.log(latestDeploymentId);
+  }
+  else
+  {
+    console.log(latestDeploymentUrl);
+  }
 }
 
 try
