@@ -64,8 +64,8 @@ jobs:
       - name: Assign staging alias/domain to latest preview deployment
         run: |
           captured_latestPreviewDeploymentUrl="${{ steps.get-latest-preview-deployment-id.outputs.latestPreviewDeploymentUrl }}"
-          echo "Assigning staging alias domain '${{ vars.DEPLOYMENT_URL }}' to preview deployment with URL: $captured_latestPreviewDeploymentUrl"
-          vercel alias set $captured_latestPreviewDeploymentUrl ${{ vars.DEPLOYMENT_URL }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          echo "Assigning staging alias domain '${{ vars.DEPLOYMENT_DOMAIN }}' to preview deployment with URL: $captured_latestPreviewDeploymentUrl"
+          vercel alias set $captured_latestPreviewDeploymentUrl ${{ vars.DEPLOYMENT_DOMAIN }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
 
   deploy-production:
     name: Deploy Production to Vercel
