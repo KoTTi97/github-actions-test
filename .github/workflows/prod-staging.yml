@@ -102,4 +102,4 @@ jobs:
         run: |
           captured_rolledBackDeploymentUrl="${{ steps.get-rolled-back-deployment-url.outputs.rolledBackDeploymentUrl }}"
           echo "Deleting rolled back deployment with URL: $captured_rolledBackDeploymentUrl"
-          vercel remove $captured_rolledBackDeploymentUrl --safe --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+          vercel remove $captured_rolledBackDeploymentUrl --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
