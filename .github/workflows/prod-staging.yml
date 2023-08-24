@@ -15,10 +15,12 @@ jobs:
   run-script:
     runs-on: self-hosted
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Run Shell Script
       id: run-script
       run: |
-        output=$(../../dummy-script.sh)
+        output=$(./dummy-script.sh)
         echo "$output"
     - name: Get the Captured Output
       run: |
