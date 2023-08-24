@@ -1,6 +1,7 @@
-const getLatestVercelProductionDeploymentId = async () =>
+const getLatestVercelDeployment = async () =>
 {
   let preferredKey;
+  let target = process.argv[3];
 
   switch(process.argv[2])
   {
@@ -14,7 +15,12 @@ const getLatestVercelProductionDeploymentId = async () =>
       throw new Error("preferredKey must be either 'prefers-deployment-id' or 'prefers-deployment-url'");
   }
 
-  const response = await fetch("https://api.vercel.com/v6/deployments?limit=2&target=production", {
+  if(target !== "production" && target !== "preview")
+  {
+    throw new Error("target must be either 'production' or 'preview'");
+  }
+
+  const response = await fetch(`https://api.vercel.com/v6/deployments?limit=2&target=${target}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${process.env.VERCEL_ACCESS_TOKEN}`
@@ -49,7 +55,7 @@ const getLatestVercelProductionDeploymentId = async () =>
 
 try
 {
-  void getLatestVercelProductionDeploymentId()
+  void getLatestVercelDeployment()
 }
 catch (e)
 {
