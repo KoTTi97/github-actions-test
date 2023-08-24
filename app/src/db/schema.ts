@@ -20,4 +20,5 @@ export const posts = pgTable("posts", {
   userId: integer("user_id").references(() => users.id),
   title: varchar("title", { length: 3 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+  kottisTest: text("kottis_test")
 });
