@@ -28,8 +28,6 @@ const getLatestVercelProductionDeploymentId = async () =>
 
   const data = await response.json()
 
-  console.log(JSON.stringify(data, null, 2));
-
   const latestDeploymentId = data.deployments[0].uid;
   const latestDeploymentUrl = data.deployments[0].url;
 
