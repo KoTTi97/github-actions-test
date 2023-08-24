@@ -21,6 +21,7 @@ const getLatestVercelProductionDeploymentId = async () =>
     throw new Error("No deployment ID found");
   }
 
+  // this is captured by the CI and used in the next step
   console.log(latestDeploymentId);
 }
 

@@ -23,8 +23,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18  # Use the desired Node.js version
-      - name: Execute Node.js Script and Capture Output
+          node-version: 18
+      - name: Get Latest Vercel Production Deployment ID
         id: execute-script
         run: |
           result=$(node ./ci/get-latest-vercel-production-deployment-id.js)
@@ -34,69 +34,85 @@ jobs:
           captured_latestDeploymentId="${{ steps.execute-script.outputs.latestDeploymentId }}"
           echo "The captured output is: $captured_latestDeploymentId"
 
-#  lint:
-#    name: Run Linting
-#    #runs-on: ubuntu-latest
-#    runs-on: self-hosted
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#      - name: Setup Node
-#        uses: actions/setup-node@v2
-#        with:
-#          node-version: 18
-#      - name: Install Dependencies
-#        working-directory: ./app
-#        run: pnpm install
-#      - name: Run type checking
-#        working-directory: ./app
-#        run: pnpm check-types
-#      - name: Run ESLint
-#        working-directory: ./app
-#        run: pnpm eslint
-#
-#  deploy-staging:
-#    name: Deploy Staging to Vercel
-#    needs: lint
-#    if: github.ref == 'refs/heads/staging'
-#    runs-on: self-hosted
-#    environment: staging
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Print environment specific variable
-#        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
-#      - name: Install Vercel CLI
-#        working-directory: ./app
-#        run: npm install --global vercel@latest
-#      - name: Pull Vercel Environment Information
-#        working-directory: ./app
-#        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-#      - name: Build Project Artifacts
-#        working-directory: ./app
-#        run: vercel build --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-#      - name: Deploy to Vercel
-#        working-directory: ./app
-#        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-#
-#  deploy-production:
-#    name: Deploy Production to Vercel
-#    needs: lint
-#    if: github.ref == 'refs/heads/main'
-#    runs-on: self-hosted
-#    environment: production
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Print environment specific variable
-#        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
-#      - name: Install Vercel CLI
-#        working-directory: ./app
-#        run: npm install --global vercel@latest
-#      - name: Pull Vercel Environment Information
-#        working-directory: ./app
-#        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-#      - name: Build Project Artifacts
-#        working-directory: ./app
-#        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-#      - name: Deploy to Vercel
-#        working-directory: ./app
-#        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+  lint:
+    name: Run Linting
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        working-directory: ./app
+        run: pnpm install
+      - name: Run type checking
+        working-directory: ./app
+        run: pnpm check-types
+      - name: Run ESLint
+        working-directory: ./app
+        run: pnpm eslint
+
+  deploy-staging:
+    name: Deploy Staging to Vercel
+    needs: lint
+    if: github.ref == 'refs/heads/staging'
+    runs-on: self-hosted
+    environment: staging
+    steps:
+      - uses: actions/checkout@v2
+      - name: Print environment specific variable
+        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
+      - name: Install Vercel CLI
+        working-directory: ./app
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        working-directory: ./app
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Build Project Artifacts
+        working-directory: ./app
+        run: vercel build --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Deploy to Vercel
+        working-directory: ./app
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+
+  deploy-production:
+    name: Deploy Production to Vercel
+    needs: lint
+    if: github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+    environment: production
+    outputs:
+      captured-output: ${{ steps.execute-script.outputs.latestDeploymentId }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Print environment specific variable
+        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
+      - name: Get Latest Vercel Production Deployment ID
+        id: get-latest-deployment-id
+        run: |
+          result=$(node ./ci/get-latest-vercel-production-deployment-id.js)
+          echo "::set-output name=latestDeploymentId::$result"
+      - name: Install Vercel CLI
+        working-directory: ./app
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        working-directory: ./app
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Build Project Artifacts
+        working-directory: ./app
+        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Deploy to Vercel
+        working-directory: ./app
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Rollback Vercel Deployment
+        run: |
+          captured_latestDeploymentId="${{ steps.execute-script.outputs.latestDeploymentId }}"
+          echo "Rolling back deployment with ID: $captured_latestDeploymentId"
+          vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
