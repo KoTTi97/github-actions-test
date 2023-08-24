@@ -20,6 +20,7 @@ jobs:
     - name: Run Shell Script
       id: run-script
       run: |
+        chmod +x ./dummy-script.sh
         output=$(./dummy-script.sh)
         echo "$output"
     - name: Get the Captured Output
