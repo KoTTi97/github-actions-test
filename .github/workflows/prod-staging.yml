@@ -1,0 +1,115 @@
+name: Lint and Deploy to Vercel for Production and Staging
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+
+jobs:
+
+  lint:
+    name: Run Linting
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        working-directory: ./app
+        run: pnpm install
+      - name: Run type checking
+        working-directory: ./app
+        run: pnpm check-types
+      - name: Run ESLint
+        working-directory: ./app
+        run: pnpm eslint
+
+  deploy-staging:
+    name: Deploy Staging to Vercel
+    needs: lint
+    if: github.ref == 'refs/heads/staging'
+    runs-on: self-hosted
+    environment: staging
+    steps:
+      - uses: actions/checkout@v2
+      - name: Print environment specific variable
+        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
+      - name: Install Vercel CLI
+        working-directory: ./app
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        working-directory: ./app
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Build Project Artifacts
+        working-directory: ./app
+        run: vercel build --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Deploy to Vercel
+        working-directory: ./app
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Get Latest Vercel Preview Deployment ID
+        id: get-latest-preview-deployment-id
+        run: |
+          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
+          echo "::set-output name=latestPreviewDeploymentUrl::$result"
+      - name: Assign staging alias/domain to latest preview deployment
+        run: |
+          captured_latestPreviewDeploymentUrl="${{ steps.get-latest-preview-deployment-id.outputs.latestPreviewDeploymentUrl }}"
+          echo "Assigning staging alias domain '${{ vars.DEPLOYMENT_DOMAIN }}' to preview deployment with URL: $captured_latestPreviewDeploymentUrl"
+          vercel alias set $captured_latestPreviewDeploymentUrl ${{ vars.DEPLOYMENT_DOMAIN }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+
+  deploy-production:
+    name: Deploy Production to Vercel
+#    needs: lint
+    if: github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+    environment: production
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Print environment specific variable
+        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
+      - name: Get Latest Vercel Production Deployment ID
+        id: get-latest-deployment-id
+        run: |
+          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
+          echo "::set-output name=latestDeploymentId::$result"
+      - name: Install Vercel CLI
+        working-directory: ./app
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        working-directory: ./app
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Build Project Artifacts
+        working-directory: ./app
+        run: vercel build --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Deploy to Vercel
+        working-directory: ./app
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Rollback Vercel Deployment
+        run: |
+          captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}"
+          echo "Rolling back deployment with ID: $captured_latestDeploymentId"
+          vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Get Vercel Deployment URL of rolled back deployment
+        id: get-rolled-back-deployment-url
+        run: |
+          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "production")
+          echo "::set-output name=rolledBackDeploymentUrl::$result"
+      - name: Delete rolled back deployment from Vercel
+        run: |
+          captured_rolledBackDeploymentUrl="${{ steps.get-rolled-back-deployment-url.outputs.rolledBackDeploymentUrl }}"
+          echo "Deleting rolled back deployment with URL: $captured_rolledBackDeploymentUrl"
+          vercel remove $captured_rolledBackDeploymentUrl --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}

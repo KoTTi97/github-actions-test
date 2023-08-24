@@ -16,9 +16,8 @@
     "start": "next start",
     "start:prod": "pnpm build && pnpm start",
     "separatoDeploy": "---------------------- DEPLOY ----------------------",
-    "vercel:link-project": "VERCEL_PROJECT_ID=prj_Vn1n0PEbRGnkVRZPszHGRqPNY2Sy VERCEL_ORG_ID=qoskyGLRMimmASRmEg9i5oEa",
-    "deploy:preview": "pnpm vercel:link-project vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes",
-    "deploy:production": "pnpm vercel:link-project vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes --prod"
+    "deploy:preview": "vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes",
+    "deploy:production": "vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes --prod"
   },
   "dependencies": {
     "next": "13.4.19",
