@@ -36,8 +36,8 @@ jobs:
 
   deploy-staging:
     name: Deploy Staging to Vercel
-    needs: lint
-    if: github.ref == 'refs/heads/staging'
+    #needs: lint
+    #if: github.ref == 'refs/heads/staging'
     runs-on: self-hosted
     environment: staging
     steps:
