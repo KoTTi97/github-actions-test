@@ -98,7 +98,20 @@ jobs:
       - name: Deploy to Vercel
         working-directory: ./app
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Rollback Vercel Deployment
+      - name: Install Dependencies
+        working-directory: ./app
+        run: pnpm install
+      - name: Apply Database Migrations
+        id: apply-db-migrations
+        working-directory: ./app
+        run: node ci/apply-db-migrations.mjs
+        continue-on-error: true
+      - name: Skip rollback if database migrations were successful
+        if: steps.apply-db-migrations.outcome == 'success'
+        run: |
+          echo "Database migrations applied successfully. Skipping rollback."
+          exit 0
+      - name: Rollback Vercel Deployment after failed database migrations
         run: |
           captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}"
           echo "Rolling back deployment with ID: $captured_latestDeploymentId"
