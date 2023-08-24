@@ -37,7 +37,7 @@ jobs:
   deploy-staging:
     name: Deploy Staging to Vercel
     #needs: lint
-    #if: github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/staging'
     runs-on: self-hosted
     environment: staging
     steps:
@@ -60,11 +60,9 @@ jobs:
   deploy-production:
     name: Deploy Production to Vercel
 #    needs: lint
-#    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: self-hosted
     environment: production
-#    outputs:
-#      captured-output: ${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up Node.js
@@ -95,3 +93,13 @@ jobs:
           captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}"
           echo "Rolling back deployment with ID: $captured_latestDeploymentId"
           vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Get Vercel Deployment ID of rolled back deployment
+        id: get-rolled-back-deployment-id
+        run: |
+          result=$(node ./ci/get-latest-vercel-production-deployment-id.js)
+          echo "::set-output name=rolledBackDeploymentId::$result"
+      - name: Delete rolled back deployment from Vercel
+        run: |
+          captured_rolledBackDeploymentId="${{ steps.get-rolled-back-deployment-id.outputs.rolledBackDeploymentId }}"
+          echo "Deleting rolled back deployment with ID: $captured_rolledBackDeploymentId"
+          vercel remove $captured_rolledBackDeploymentId --safe --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
