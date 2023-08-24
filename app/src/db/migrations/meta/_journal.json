@@ -1,1 +1,20 @@
-{"version":"5","dialect":"pg","entries":[]}
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1692912196497,
+      "tag": "0000_bright_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1692913392463,
+      "tag": "0001_previous_spitfire",
+      "breakpoints": true
+    }
+  ]
+}

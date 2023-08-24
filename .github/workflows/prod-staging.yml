@@ -59,7 +59,7 @@ jobs:
       - name: Get Latest Vercel Preview Deployment ID
         id: get-latest-preview-deployment-id
         run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
+          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
           echo "::set-output name=latestPreviewDeploymentUrl::$result"
       - name: Assign staging alias/domain to latest preview deployment
         run: |
@@ -84,7 +84,7 @@ jobs:
       - name: Get Latest Vercel Production Deployment ID
         id: get-latest-deployment-id
         run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
+          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
           echo "::set-output name=latestDeploymentId::$result"
       - name: Install Vercel CLI
         working-directory: ./app
@@ -106,7 +106,7 @@ jobs:
       - name: Get Vercel Deployment URL of rolled back deployment
         id: get-rolled-back-deployment-url
         run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "production")
+          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-url" "production")
           echo "::set-output name=rolledBackDeploymentUrl::$result"
       - name: Delete rolled back deployment from Vercel
         run: |
