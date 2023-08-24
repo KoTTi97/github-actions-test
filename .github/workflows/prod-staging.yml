@@ -3,7 +3,7 @@ name: Lint and Deploy to Vercel for Production and Staging
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  VERCEL_CI_TOKEN: ${{ secrets.VERCEL_CI_TOKEN }}
+  VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
 
 on:
   push:
@@ -63,8 +63,8 @@ jobs:
 #    if: github.ref == 'refs/heads/main'
     runs-on: self-hosted
     environment: production
-    outputs:
-      captured-output: ${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}
+#    outputs:
+#      captured-output: ${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up Node.js

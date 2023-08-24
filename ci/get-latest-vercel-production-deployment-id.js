@@ -1,9 +1,9 @@
 const getLatestVercelProductionDeploymentId = async () =>
 {
-  const response = await fetch("https://api.vercel.com/v6/deployments?limit=1&target=production", {
+  const response = await fetch("https://api.vercel.com/v6/deployments?limit=2&target=production", {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${process.env.VERCEL_CI_TOKEN}`
+      Authorization: `Bearer ${process.env.VERCEL_ACCESS_TOKEN}`
     }
   })
 
