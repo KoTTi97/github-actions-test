@@ -3,6 +3,7 @@ name: Lint and Deploy to Vercel for Production and Staging
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_CI_TOKEN: ${{ secrets.VERCEL_CI_TOKEN }}
 
 on:
   push:
