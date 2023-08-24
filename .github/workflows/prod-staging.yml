@@ -13,30 +13,30 @@ on:
 
 jobs:
 
-#  lint:
-#    name: Run Linting
-#    #runs-on: ubuntu-latest
-#    runs-on: self-hosted
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#      - name: Setup Node
-#        uses: actions/setup-node@v2
-#        with:
-#          node-version: 18
-#      - name: Install Dependencies
-#        working-directory: ./app
-#        run: pnpm install
-#      - name: Run type checking
-#        working-directory: ./app
-#        run: pnpm check-types
-#      - name: Run ESLint
-#        working-directory: ./app
-#        run: pnpm eslint
+  lint:
+    name: Run Linting
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        working-directory: ./app
+        run: pnpm install
+      - name: Run type checking
+        working-directory: ./app
+        run: pnpm check-types
+      - name: Run ESLint
+        working-directory: ./app
+        run: pnpm eslint
 
   deploy-staging:
     name: Deploy Staging to Vercel
-    #needs: lint
+    needs: lint
     if: github.ref == 'refs/heads/staging'
     runs-on: self-hosted
     environment: staging
