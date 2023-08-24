@@ -21,7 +21,7 @@ const getLatestVercelProductionDeploymentId = async () =>
     throw new Error("No deployment ID found");
   }
 
-  console.log(`::set-output name=latestDeploymentId::${latestDeploymentId}`);
+  console.log(latestDeploymentId);
 }
 
 try
