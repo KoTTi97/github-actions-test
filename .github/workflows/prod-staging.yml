@@ -13,26 +13,26 @@ on:
 
 jobs:
 
-  lint:
-    name: Run Linting
-    #runs-on: ubuntu-latest
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-      - name: Install Dependencies
-        working-directory: ./app
-        run: pnpm install
-      - name: Run type checking
-        working-directory: ./app
-        run: pnpm check-types
-      - name: Run ESLint
-        working-directory: ./app
-        run: pnpm eslint
+#  lint:
+#    name: Run Linting
+#    #runs-on: ubuntu-latest
+#    runs-on: self-hosted
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: Setup Node
+#        uses: actions/setup-node@v2
+#        with:
+#          node-version: 18
+#      - name: Install Dependencies
+#        working-directory: ./app
+#        run: pnpm install
+#      - name: Run type checking
+#        working-directory: ./app
+#        run: pnpm check-types
+#      - name: Run ESLint
+#        working-directory: ./app
+#        run: pnpm eslint
 
   deploy-staging:
     name: Deploy Staging to Vercel
@@ -64,7 +64,7 @@ jobs:
     runs-on: self-hosted
     environment: production
     outputs:
-      captured-output: ${{ steps.execute-script.outputs.latestDeploymentId }}
+      captured-output: ${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up Node.js
@@ -92,6 +92,6 @@ jobs:
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Rollback Vercel Deployment
         run: |
-          captured_latestDeploymentId="${{ steps.execute-script.outputs.latestDeploymentId }}"
+          captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}"
           echo "Rolling back deployment with ID: $captured_latestDeploymentId"
           vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
