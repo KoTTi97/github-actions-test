@@ -4,6 +4,7 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 on:
   push:
@@ -42,6 +43,13 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        working-directory: ./app
+        run: pnpm install
       - name: Print environment specific variable
         run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
       - name: Install Vercel CLI
@@ -56,10 +64,14 @@ jobs:
       - name: Deploy to Vercel
         working-directory: ./app
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Apply Database Migrations
+        id: apply-db-migrations
+        working-directory: ./app
+        run: node ci/apply-db-migrations.mjs
       - name: Get Latest Vercel Preview Deployment ID
         id: get-latest-preview-deployment-id
         run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
+          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
           echo "::set-output name=latestPreviewDeploymentUrl::$result"
       - name: Assign staging alias/domain to latest preview deployment
         run: |
@@ -79,12 +91,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 18
+      - name: Install Dependencies
+        working-directory: ./app
+        run: pnpm install
       - name: Print environment specific variable
         run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
       - name: Get Latest Vercel Production Deployment ID
         id: get-latest-deployment-id
         run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
+          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
           echo "::set-output name=latestDeploymentId::$result"
       - name: Install Vercel CLI
         working-directory: ./app
@@ -98,15 +113,26 @@ jobs:
       - name: Deploy to Vercel
         working-directory: ./app
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Rollback Vercel Deployment
+      - name: Apply Database Migrations
+        id: apply-db-migrations
+        working-directory: ./app
+        run: node ci/apply-db-migrations.mjs
+        continue-on-error: true
+      - name: Skip rollback if database migrations were successful
+        if: steps.apply-db-migrations.outcome == 'success'
         run: |
+          echo "Database migrations applied successfully. Skipping rollback."
+          exit 0
+      - name: Rollback Vercel Deployment after failed database migrations
+        run: |
+          echo "Database migrations failed. Rolling back deployment."
           captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.latestDeploymentId }}"
           echo "Rolling back deployment with ID: $captured_latestDeploymentId"
           vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Get Vercel Deployment URL of rolled back deployment
         id: get-rolled-back-deployment-url
         run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "production")
+          result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-url" "production")
           echo "::set-output name=rolledBackDeploymentUrl::$result"
       - name: Delete rolled back deployment from Vercel
         run: |
