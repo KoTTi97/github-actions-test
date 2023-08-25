@@ -33,6 +33,11 @@ jobs:
             echo "VERCEL_ENVIRONMENT_FLAG=" >> "GITHUB_OUTPUT"
             echo "VERCEL_ENVIRONMENT=preview" >> "GITHUB_OUTPUT"
           fi
+      - name: Print Vercel Environment Flag
+        env:
+          VERCEL_ENVIRONMENT_FLAG: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT_FLAG }}
+          VERCEL_ENVIRONMENT: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT }}
+        run: echo "$VERCEL_ENVIRONMENT $VERCEL_ENVIRONMENT_FLAG"
 
 #  lint:
 #    name: Run Linting
