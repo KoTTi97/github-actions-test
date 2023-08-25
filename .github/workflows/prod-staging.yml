@@ -33,6 +33,13 @@ jobs:
             echo "VERCEL_ENVIRONMENT_FLAG=" >> "$GITHUB_OUTPUT"
             echo "VERCEL_ENVIRONMENT=preview" >> "$GITHUB_OUTPUT"
           fi
+      - name: Print Vercel Environment Flag
+        env:
+          VERCEL_ENVIRONMENT_FLAG: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT_FLAG }}
+          VERCEL_ENVIRONMENT: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT }}
+        run: | 
+          echo "Vercel Environment: $VERCEL_ENVIRONMENT"
+          echo "Vercel Environment Flag: $VERCEL_ENVIRONMENT_FLAG"
 
 #  lint:
 #    name: Run Linting
@@ -75,6 +82,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Print Vercel Environment Flag
+        run: |
+          echo "Vercel Environment: $VERCEL_ENVIRONMENT"
+          echo "Vercel Environment Flag: $VERCEL_ENVIRONMENT_FLAG"
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
