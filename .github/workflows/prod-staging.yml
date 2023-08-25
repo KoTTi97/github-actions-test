@@ -96,7 +96,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: next-build
-          path: app/.next
+          path: |
+            app/.next
+            app/.vercel
 
   deploy-staging:
     name: Deploy Staging to Vercel
@@ -122,7 +124,10 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: next-build
-          path: app/.next
+          path: app
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: app/.vercel
       - name: Deploy to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Apply Database Migrations
