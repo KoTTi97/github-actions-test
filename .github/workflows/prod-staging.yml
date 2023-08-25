@@ -110,7 +110,7 @@ jobs:
           name: next-build
           path: app/.next
       - name: Display structure of next build
-        working-directory: .next
+        working-directory: app/.next
         run: ls -R
 
 #  deploy-staging:
