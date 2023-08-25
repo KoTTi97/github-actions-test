@@ -30,8 +30,8 @@ jobs:
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "Vercel environment is production"
-            echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "$GITHUB_ENV"
-            echo "VERCEL_ENVIRONMENT=production" >> "$GITHUB_ENV"
+            echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "GITHUB_OUTPUT"
+            echo "VERCEL_ENVIRONMENT=production" >> "GITHUB_OUTPUT"
           fi
 
 #  lint:
