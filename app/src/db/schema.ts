@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys-fix/sort-keys-fix */
 import {
-  varchar, timestamp, text, pgTable, integer, serial, pgEnum,
+  varchar, timestamp, text, pgTable, integer, serial, pgEnum, 
 } from "drizzle-orm/pg-core";
 
 export const providerEnum = pgEnum("provider", ["apple", "email", "google"]);
