@@ -23,8 +23,6 @@ jobs:
       VERCEL_ENVIRONMENT_FLAG: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT_FLAG }}
       VERCEL_ENVIRONMENT: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT }}
     steps:
-      - id: step1
-        run: echo "test=hello" >> "$GITHUB_OUTPUT"
       - name: Set Production Flag
         id: set-flag
         run: |
