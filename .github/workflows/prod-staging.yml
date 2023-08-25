@@ -62,7 +62,7 @@ jobs:
   build:
     name: Build Next.js App
     needs:
-      - set-production-flag-if-main-branch
+      - set-vercel-production-environment-if-main-branch
       #- lint
     runs-on: ubuntu-latest
     defaults:
