@@ -50,11 +50,6 @@ jobs:
       - name: Install Dependencies
         working-directory: ./app
         run: pnpm install
-      - name: Print environment specific variable
-        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
-      - name: Install Vercel CLI
-        working-directory: ./app
-        run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
         working-directory: ./app
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
@@ -94,16 +89,11 @@ jobs:
       - name: Install Dependencies
         working-directory: ./app
         run: pnpm install
-      - name: Print environment specific variable
-        run: echo "${{ vars.TEST_ENVIRONMENT_VARIABLE }}"
       - name: Get Latest Vercel Production Deployment ID
         id: get-latest-deployment-id
         run: |
           result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
           echo "LATEST_DEPLOYMENT_ID=$result" >> $GITHUB_OUTPUT
-      - name: Install Vercel CLI
-        working-directory: ./app
-        run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
         working-directory: ./app
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
