@@ -5,8 +5,6 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  VERCEL_ENVIRONMENT_FLAG: "" # Default is an empty string for preview. Set to "--prod" if branch is main
-  VERCEL_ENVIRONMENT: "preview" # Default is preview. Set to "production" if branch is main
 
 on:
   push:
@@ -27,9 +25,13 @@ jobs:
         id: set-flag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "Vercel environment is production"
-            echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "GITHUB_OUTPUT"
-            echo "VERCEL_ENVIRONMENT=production" >> "GITHUB_OUTPUT"
+          echo "Vercel environment is production"
+          echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "GITHUB_OUTPUT"
+          echo "VERCEL_ENVIRONMENT=production" >> "GITHUB_OUTPUT"
+          else
+          echo "Vercel environment is not staging"
+          echo "VERCEL_ENVIRONMENT_FLAG=" >> "GITHUB_OUTPUT"
+          echo "VERCEL_ENVIRONMENT=preview" >> "GITHUB_OUTPUT"
           fi
 
 #  lint:
