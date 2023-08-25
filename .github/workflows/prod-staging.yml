@@ -24,7 +24,7 @@ jobs:
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             echo "Setting vercel environment flag to '--prod'"
-            echo "::set-env name=VERCEL_ENVIRONMENT_FLAG::--prod"
+            echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "$GITHUB_ENV"
           fi
       - name: Print Vercel Environment Flag
         run: | 
