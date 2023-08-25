@@ -25,13 +25,13 @@ jobs:
         id: set-flag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          echo "Vercel environment is production"
-          echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "GITHUB_OUTPUT"
-          echo "VERCEL_ENVIRONMENT=production" >> "GITHUB_OUTPUT"
+            echo "Vercel environment is production"
+            echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "GITHUB_OUTPUT"
+            echo "VERCEL_ENVIRONMENT=production" >> "GITHUB_OUTPUT"
           else
-          echo "Vercel environment is not staging"
-          echo "VERCEL_ENVIRONMENT_FLAG=" >> "GITHUB_OUTPUT"
-          echo "VERCEL_ENVIRONMENT=preview" >> "GITHUB_OUTPUT"
+            echo "Vercel environment is staging"
+            echo "VERCEL_ENVIRONMENT_FLAG=" >> "GITHUB_OUTPUT"
+            echo "VERCEL_ENVIRONMENT=preview" >> "GITHUB_OUTPUT"
           fi
 
 #  lint:
@@ -66,13 +66,19 @@ jobs:
       - set-vercel-environment
       #- lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Print Vercel Environment Flag
+        env:
+          VERCEL_ENVIRONMENT_FLAG: ${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT_FLAG }}
+          VERCEL_ENVIRONMENT: ${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT }}
         run: |
-          echo "${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT }}"
-          echo "${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT_FLAG }}"
+          echo "${{ $VERCEL_ENVIRONMENT }}"
+          echo "${{ $VERCEL_ENVIRONMENT_FLAG }}"
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
