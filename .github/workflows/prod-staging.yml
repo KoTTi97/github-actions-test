@@ -22,7 +22,7 @@ jobs:
       - name: Set Production Flag
         id: set-flag
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "Setting vercel environment flag to '--prod'"
             echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "$GITHUB_ENV"
           fi
