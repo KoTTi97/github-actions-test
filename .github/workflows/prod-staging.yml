@@ -72,10 +72,10 @@ jobs:
         id: get-latest-preview-deployment-id
         run: |
           result=$(node ./app/ci/get-latest-vercel-deployment.js "prefers-deployment-url" "preview")
-          echo "::set-output name=latestPreviewDeploymentUrl::$result"
+          echo "LATEST_PREVIEW_DEPLOYMENT_URL=$result" >> $GITHUB_OUTPUT
       - name: Assign staging alias/domain to latest preview deployment
         run: |
-          captured_latestPreviewDeploymentUrl="${{ steps.get-latest-preview-deployment-id.outputs.latestPreviewDeploymentUrl }}"
+          captured_latestPreviewDeploymentUrl="${{ steps.get-latest-preview-deployment-id.outputs.LATEST_PREVIEW_DEPLOYMENT_URL }}"
           echo "Assigning staging alias domain '${{ vars.DEPLOYMENT_DOMAIN }}' to preview deployment with URL: $captured_latestPreviewDeploymentUrl"
           vercel alias set $captured_latestPreviewDeploymentUrl ${{ vars.DEPLOYMENT_DOMAIN }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
 
