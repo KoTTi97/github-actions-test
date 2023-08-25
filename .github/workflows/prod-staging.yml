@@ -91,6 +91,27 @@ jobs:
         run: vercel pull --yes --environment=${{ env.VERCEL_ENVIRONMENT }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Build Project Artifacts
         run: vercel build ${{ env.VERCEL_ENVIRONMENT_FLAG }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      - name: Upload Build Folder as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: next-build
+          path: .next
+
+  test-artifcat:
+    name: Test Artifact
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: next-build
+          path: .next
+      - name: Display structure of next build
+        working-directory: .next
+        run: ls -R
 
 #  deploy-staging:
 #    name: Deploy Staging to Vercel
