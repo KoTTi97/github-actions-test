@@ -5,8 +5,6 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  VERCEL_ENVIRONMENT_FLAG: "" # Default is an empty string for preview. Set to "--prod" if branch is main
-  VERCEL_ENVIRONMENT: "preview" # Default is preview. Set to "production" if branch is main
 
 on:
   push:
@@ -16,22 +14,25 @@ on:
 
 jobs:
 
-  set-vercel-production-environment-if-main-branch:
+  set-vercel-environment:
     name: Set Vercel Production Environment if Main Branch
     runs-on: ubuntu-latest
+    outputs:
+      VERCEL_ENVIRONMENT_FLAG: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT_FLAG }}
+      VERCEL_ENVIRONMENT: ${{ steps.set-flag.outputs.VERCEL_ENVIRONMENT }}
     steps:
       - name: Set Production Flag
         id: set-flag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "Setting vercel environment flag to '--prod'"
-            echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "$GITHUB_ENV"
-            echo "VERCEL_ENVIRONMENT=production" >> "$GITHUB_ENV"
+            echo "Vercel environment is production"
+            echo "VERCEL_ENVIRONMENT_FLAG=--prod" >> "$GITHUB_OUTPUT"
+            echo "VERCEL_ENVIRONMENT=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "Vercel environment is staging"
+            echo "VERCEL_ENVIRONMENT_FLAG=" >> "$GITHUB_OUTPUT"
+            echo "VERCEL_ENVIRONMENT=preview" >> "$GITHUB_OUTPUT"
           fi
-      - name: Print Vercel Environment Flag
-        run: |
-          echo "vercel environment flag: ${{ env.VERCEL_ENVIRONMENT_FLAG }}"
-          echo "vercel environment: ${{ env.VERCEL_ENVIRONMENT }}"
 
 #  lint:
 #    name: Run Linting
@@ -62,12 +63,15 @@ jobs:
   build:
     name: Build Next.js App
     needs:
-      - set-vercel-production-environment-if-main-branch
+      - set-vercel-environment
       #- lint
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./app
+        working-directory: app
+    env:
+      VERCEL_ENVIRONMENT: ${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT }}
+      VERCEL_ENVIRONMENT_FLAG: ${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT_FLAG }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
