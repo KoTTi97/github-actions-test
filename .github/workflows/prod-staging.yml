@@ -74,11 +74,9 @@ jobs:
         uses: actions/checkout@v3
       - name: Print Vercel Environment Flag
         env:
-          VERCEL_ENVIRONMENT_FLAG: ${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT_FLAG }}
           VERCEL_ENVIRONMENT: ${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT }}
-        run: |
-          echo "$VERCEL_ENVIRONMENT"
-          echo "$VERCEL_ENVIRONMENT_FLAG"
+          VERCEL_ENVIRONMENT_FLAG: ${{ needs.set-vercel-environment.outputs.VERCEL_ENVIRONMENT_FLAG }}
+        run: echo "$VERCEL_ENVIRONMENT $VERCEL_ENVIRONMENT_FLAG"
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
