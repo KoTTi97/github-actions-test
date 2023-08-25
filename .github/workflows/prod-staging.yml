@@ -5,6 +5,7 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_ACCESS_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  VERCEL_ENVIRONMENT_FLAG: ""
 
 on:
   push:
@@ -14,32 +15,54 @@ on:
 
 jobs:
 
-  lint:
-    name: Run Linting
+  kotti:
+    name: Kotti
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache-dependency-path: ./app/pnpm-lock.yaml
-          cache: 'pnpm'
-      - name: Install Dependencies
-        working-directory: ./app
-        run: pnpm install
-      - name: Run type checking
-        working-directory: ./app
-        run: pnpm check-types
-      - name: Run ESLint
-        working-directory: ./app
-        run: pnpm eslint
+      - name: Set Production Flag
+        id: set-flag
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "Setting vercel environment flag to '--prod'"
+            echo "::set-env name=VERCEL_ENVIRONMENT_FLAG::--prod"
+          fi
+      - name: Print Vercel Environment Flag
+        run: | 
+          echo "vercel environment flag: ${{ env.VERCEL_ENVIRONMENT_FLAG }}"
 
+
+
+#  lint:
+#    name: Run Linting
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#      - name: Setup pnpm
+#        uses: pnpm/action-setup@v2
+#        with:
+#          version: 8
+#      - name: Setup Node
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 18
+#          cache-dependency-path: ./app/pnpm-lock.yaml
+#          cache: 'pnpm'
+#      - name: Install Dependencies
+#        working-directory: ./app
+#        run: pnpm install
+#      - name: Run type checking
+#        working-directory: ./app
+#        run: pnpm check-types
+#      - name: Run ESLint
+#        working-directory: ./app
+#        run: pnpm eslint
+#
+#  build:
+#    name: Build Next.js App
+#    needs: lint
+#
+#
 #  deploy-staging:
 #    name: Deploy Staging to Vercel
 #    needs: lint
