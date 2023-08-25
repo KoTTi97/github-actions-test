@@ -123,9 +123,6 @@ jobs:
         with:
           name: next-build
           path: app/.next
-      - name: Display structure of next build
-        working-directory: app/.next
-        run: ls -R
       - name: Deploy to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Apply Database Migrations
