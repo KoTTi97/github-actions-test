@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: next-build
-          path: .next
+          path: app/.next
 
   test-artifcat:
     name: Test Artifact
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: next-build
-          path: .next
+          path: app/.next
       - name: Display structure of next build
         working-directory: .next
         run: ls -R
