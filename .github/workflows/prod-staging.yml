@@ -44,8 +44,7 @@ jobs:
     name: Deploy Staging to Vercel
     if: github.ref == 'refs/heads/staging'
     environment: staging
-    needs:
-      - set-vercel-environment
+    # needs:
       # - lint
     runs-on: ubuntu-latest
     defaults:
@@ -88,8 +87,7 @@ jobs:
     name: Deploy Production to Vercel
     if: github.ref == 'refs/heads/main'
     environment: production
-    needs:
-      - set-vercel-environment
+    # needs:
       # - lint
     runs-on: ubuntu-latest
     defaults:
