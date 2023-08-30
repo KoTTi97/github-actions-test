@@ -60,8 +60,10 @@ jobs:
       - name: Run ESLint
         run: pnpm eslint
 
-  build:
-    name: Build Next.js App
+  deploy-staging:
+    name: Deploy to Vercel
+    if: github.ref == 'refs/heads/staging'
+    environment: staging
     needs:
       - set-vercel-environment
       # - lint
@@ -87,47 +89,8 @@ jobs:
           cache: 'pnpm'
       - name: Install Dependencies
         run: pnpm install
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=${{ env.VERCEL_ENVIRONMENT }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Build Project Artifacts
-        run: vercel build ${{ env.VERCEL_ENVIRONMENT_FLAG }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Zip Build Folder
-        run: zip -q -r bundle.zip .vercel/output # -r for recursive, -q for quiet
-      - name: Upload Build Folder as Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: next-build
-          path: app/bundle.zip
-
-  deploy-staging:
-    name: Deploy Staging to Vercel
-    needs: build
-    if: github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
-    environment: staging
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - name: Install Dependencies
-        run: pnpm install
-      - uses: actions/download-artifact@v3
-        with:
-          name: next-build
-          path: app
-      - name: Unzip build folder
-        run: unzip -q bundle.zip
       - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+        run: vercel deploy --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Apply Database Migrations
         id: apply-db-migrations
         run: node ci/apply-db-migrations.mjs
@@ -141,58 +104,60 @@ jobs:
           captured_latestPreviewDeploymentUrl="${{ steps.get-latest-preview-deployment-id.outputs.LATEST_PREVIEW_DEPLOYMENT_URL }}"
           echo "Assigning staging alias domain '${{ vars.DEPLOYMENT_DOMAIN }}' to preview deployment with URL: $captured_latestPreviewDeploymentUrl"
           vercel alias set $captured_latestPreviewDeploymentUrl ${{ vars.DEPLOYMENT_DOMAIN }} --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+      
+      
 
-  deploy-production:
-    name: Deploy Production to Vercel
-    needs: build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
-    if: github.ref == 'refs/heads/main'
-    environment: production
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - name: Install Dependencies
-        run: pnpm install
-      - uses: actions/download-artifact@v3
-        with:
-          name: next-build
-          path: app
-      - name: Get Latest Vercel Production Deployment ID
-        id: get-latest-deployment-id
-        run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
-          echo "LATEST_DEPLOYMENT_ID=$result" >> $GITHUB_OUTPUT
-      - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Apply Database Migrations
-        id: apply-db-migrations
-        run: node ci/apply-db-migrations.mjs
-      - name: Rollback Vercel Deployment after failed database migrations
-        if: failure() && steps.apply-db-migrations.conclusion == 'failure'
-        run: |
-          echo "Database migrations failed. Rolling back deployment."
-          captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.LATEST_DEPLOYMENT_ID }}"
-          echo "Rolling back deployment with ID: $captured_latestDeploymentId"
-          vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
-      - name: Get Vercel Deployment URL of rolled back deployment
-        if: failure() && steps.apply-db-migrations.conclusion == 'failure'
-        id: get-rolled-back-deployment-url
-        run: |
-          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "production")
-          echo "ROLLED_BACK_DEPLOYMENT_URL=$result" >> $GITHUB_OUTPUT
-      - name: Delete rolled back deployment from Vercel
-        if: failure() && steps.apply-db-migrations.conclusion == 'failure'
-        run: |
-          captured_rolledBackDeploymentUrl="${{ steps.get-rolled-back-deployment-url.outputs.ROLLED_BACK_DEPLOYMENT_URL }}"
-          echo "Deleting rolled back deployment with URL: $captured_rolledBackDeploymentUrl"
-          vercel remove $captured_rolledBackDeploymentUrl --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#  deploy-production:
+#    name: Deploy Production to Vercel
+#    needs: build
+#    runs-on: ubuntu-latest
+#    defaults:
+#      run:
+#        working-directory: app
+#    if: github.ref == 'refs/heads/main'
+#    environment: production
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Setup pnpm
+#        uses: pnpm/action-setup@v2
+#        with:
+#          version: 8
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 18
+#      - name: Install Dependencies
+#        run: pnpm install
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: next-build
+#          path: app
+#      - name: Get Latest Vercel Production Deployment ID
+#        id: get-latest-deployment-id
+#        run: |
+#          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-id" "production")
+#          echo "LATEST_DEPLOYMENT_ID=$result" >> $GITHUB_OUTPUT
+#      - name: Deploy to Vercel
+#        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Apply Database Migrations
+#        id: apply-db-migrations
+#        run: node ci/apply-db-migrations.mjs
+#      - name: Rollback Vercel Deployment after failed database migrations
+#        if: failure() && steps.apply-db-migrations.conclusion == 'failure'
+#        run: |
+#          echo "Database migrations failed. Rolling back deployment."
+#          captured_latestDeploymentId="${{ steps.get-latest-deployment-id.outputs.LATEST_DEPLOYMENT_ID }}"
+#          echo "Rolling back deployment with ID: $captured_latestDeploymentId"
+#          vercel rollback $captured_latestDeploymentId --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
+#      - name: Get Vercel Deployment URL of rolled back deployment
+#        if: failure() && steps.apply-db-migrations.conclusion == 'failure'
+#        id: get-rolled-back-deployment-url
+#        run: |
+#          result=$(node ./ci/get-latest-vercel-deployment.js "prefers-deployment-url" "production")
+#          echo "ROLLED_BACK_DEPLOYMENT_URL=$result" >> $GITHUB_OUTPUT
+#      - name: Delete rolled back deployment from Vercel
+#        if: failure() && steps.apply-db-migrations.conclusion == 'failure'
+#        run: |
+#          captured_rolledBackDeploymentUrl="${{ steps.get-rolled-back-deployment-url.outputs.ROLLED_BACK_DEPLOYMENT_URL }}"
+#          echo "Deleting rolled back deployment with URL: $captured_rolledBackDeploymentUrl"
+#          vercel remove $captured_rolledBackDeploymentUrl --yes --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
