@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "separatorDev": "---------------------- DEVELOPMENT ----------------------",
-    "dev": "next dev -p 3000",
+    "dev": "node -r dotenv-flow/config ci/apply-db-migrations.mjs && next dev -p 3000",
     "sepatatorLint": "---------------------- LINT ----------------------",
     "check-types": "tsc --noEmit",
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx src",
@@ -19,13 +19,15 @@
     "deploy:preview": "vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes",
     "deploy:production": "vercel deploy --token $VERCEL_ACCESS_TOKEN --local-config vercel.json --yes --prod",
     "separatorDrizzle": "---------------------- DRIZZLE ----------------------",
-    "db:push": "drizzle-kit push:pg --config=drizzle.config.ts",
     "drizzle:studio": "drizzle-kit studio",
-    "migrations:generate": "drizzle-kit generate:pg --config=drizzle.config.ts",
-    "migrations:drop": "drizzle-kit drop --config=drizzle.config.ts"
+    "generate-migrations-without-row-level-security": "drizzle-kit generate:pg --config=drizzle.config.ts",
+    "generate-new-custom-migration": "drizzle-kit generate:pg --config=drizzle.config.ts --custom",
+    "generate-migrations": "sh ./scripts/generate-migrations.sh",
+    "drop-migration": "drizzle-kit drop --config=drizzle.config.ts"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
+    "dotenv-flow": "^3.3.0",
     "drizzle-orm": "^0.28.5",
     "next": "13.4.19",
     "postgres": "^3.3.5",
