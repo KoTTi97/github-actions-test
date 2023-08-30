@@ -125,7 +125,7 @@ jobs:
           name: next-build
           path: app
       - name: Unzip build folder
-        run: unzip app/release.zip
+        run: unzip release.zip
       - name: Deploy to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Apply Database Migrations
