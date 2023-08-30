@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys-fix/sort-keys-fix */
 import {
-  varchar, timestamp, text, pgTable, integer, serial, pgEnum,
+  varchar, timestamp, pgTable, integer, serial, pgEnum,
 } from "drizzle-orm/pg-core";
 
 export const providerEnum = pgEnum("provider", ["apple", "email", "google"]);
@@ -19,6 +19,5 @@ export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   title: varchar("title", { length: 3 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  kottisTest: text("kottis_test")
+  createdAt: timestamp("created_at").defaultNow()
 });

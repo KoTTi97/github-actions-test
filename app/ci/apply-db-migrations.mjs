@@ -18,7 +18,7 @@ try
 }
 catch (e)
 {
-  console.log("error while applying migrations", e);
+  console.log("Error while applying migrations. Did you generate migrations first?", e);
   process.exit(1);
 }
 
